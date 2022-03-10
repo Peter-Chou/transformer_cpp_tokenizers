@@ -1,0 +1,7 @@
+-xc++
+-std=c++17
+-Iprotos
+-Iinclude
+-Itests
+-Isrc
+-I.
