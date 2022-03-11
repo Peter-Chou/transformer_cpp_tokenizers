@@ -3,5 +3,4 @@
 -Iprotos
 -Iinclude
 -Itests
--Isrc
 -I.
