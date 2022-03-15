@@ -1,6 +1,4 @@
 -xc++
 -std=c++17
--Iprotos
--Iinclude
--Itests
+-Ithird_party/unilib/unilib
 -I.

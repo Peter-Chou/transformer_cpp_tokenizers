@@ -1,5 +1,7 @@
 #pragma once
 
+#include <unicode/unistr.h>
+
 #include <regex>
 #include <string>
 #include <vector>
@@ -25,4 +27,10 @@ class WhitespaceTokenizer {
   std::sregex_token_iterator end_;
 };
 
+bool IsWhiteSpace(const char32_t& uchar);
+bool IsControl(const char32_t& uchar);
+bool IsPunctuation(const char32_t& uchar);
+icu::UnicodeString LTrim(const icu::UnicodeString& text);
+icu::UnicodeString RTrim(const icu::UnicodeString& text);
+icu::UnicodeString Strip(const icu::UnicodeString& text);
 }  // namespace tokenizers

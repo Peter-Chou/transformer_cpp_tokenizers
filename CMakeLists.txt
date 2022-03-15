@@ -18,7 +18,9 @@ endif()
 # ICU Components Reference:
 # https://cmake.org/cmake/help/latest/module/FindICU.html
 # ICU components = data, i18n, io, le, lx, test, tu and uc.
-find_package(ICU 66.0 COMPONENTS uc io REQUIRED)
+find_package(ICU 66.0 COMPONENTS uc io i18n REQUIRED)
 # find_package(ICU COMPONENTS data uc i18n io le lx REQUIRED)
+
+include_directories(third_party/unilib/unilib)
 
 add_subdirectory(tokenizers)

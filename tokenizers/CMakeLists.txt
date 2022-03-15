@@ -2,14 +2,17 @@
 include_directories(.)
 
 add_subdirectory(bert)
+add_subdirectory(unilib)
 
 add_executable(main
     main.cc
     basic_tokenizer.cc
+    tokenizer_utils.cc
     )
 
 target_link_libraries(main PUBLIC
     bert_tokenizer
+    unilib
     ${ICU_LIBRARIES}
     )
 target_include_directories(main PUBLIC ${ICU_INCLUDE_DIRS})
