@@ -1,16 +1,14 @@
 #pragma once
 
+#include "utils/unistr_utils.h"
+
 #include <unicode/unistr.h>
 
 #include <set>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
-
-template <>
-struct std::hash<icu::UnicodeString> {
-  size_t operator()(const icu::UnicodeString& x) const { return x.hashCode(); }
-};
 
 namespace tokenizers {
 class BasicTokenizer {
@@ -22,6 +20,12 @@ class BasicTokenizer {
     int start;
     int length;
   };
+  BasicTokenizer(bool do_lower_case = true,
+                 const std::unordered_set<icu::UnicodeString>& never_split = {
+                     "[UNK]", "[SEP]", "[PAD]", "[CLS]", "[MASK]"});
+
+  std::vector<icu::UnicodeString> Tokenize(icu::UnicodeString& text);
+
   void AddSpecialToken(const icu::UnicodeString& token);
   std::vector<icu::UnicodeString> SplitBySpecialToken(
       const icu::UnicodeString& text);
@@ -29,17 +33,21 @@ class BasicTokenizer {
   std::vector<TokenSpan> getSpecialTokenSpans(const icu::UnicodeString& text);
 
   CharIdsMapList& GetTokenSetMapList() { return char_ids_map_list_; }
+  std::vector<icu::UnicodeString> SplitByPunctuation(
+      const icu::UnicodeString& text);
 
- private:
+private:
   void addUcharToSet(const icu::UnicodeString& uchar, int list_pos,
                      int token_idx);
 
-  // std::vector<std::string> special_tokens_;
   CharIdsMapList char_ids_map_list_;
-  std::vector<icu::UnicodeString> special_tokens_;
+  // std::vector<icu::UnicodeString> special_tokens_;
+  std::unordered_set<icu::UnicodeString> special_tokens_;
 
   std::vector<std::string> model_input_names_ = {"input_ids", "token_type_ids",
                                                  "attention_mask"};
+  bool do_lower_case_ = true;
+  bool tokenize_chinese_chars_ = true;
   std::string padding_side_ = "right";
   std::string truncation_side_ = "right";
 };

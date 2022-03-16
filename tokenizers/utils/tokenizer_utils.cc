@@ -1,9 +1,10 @@
-#include "tokenizer_utils.h"
+#include "utils/tokenizer_utils.h"
 
 #include "unicode/regex.h"
 #include "unilib/unicode.h"
 #include "unilib/uninorms.h"
 
+#include <cstdint>
 #include <unordered_map>
 
 namespace unilib = ufal::unilib;
@@ -28,7 +29,7 @@ static std::unordered_map<unilib::unicode::category_t, const char*> categories =
 };
 
 namespace tokenizers {
-bool IsWhiteSpace(const char32_t& uchar) {
+bool IsWhiteSpace(const UChar32& uchar) {
   if (uchar == U' ' || uchar == U'\t' || uchar == U'\n' || uchar == U'\r') {
     return true;
   }
@@ -40,7 +41,7 @@ bool IsWhiteSpace(const char32_t& uchar) {
   return false;
 }
 
-bool IsControl(const char32_t& uchar) {
+bool IsControl(const UChar32& uchar) {
   // strcmp(sName,Student.name) == 0
   if (uchar == U'\t' || uchar == U'\n' || uchar == U'\r') {
     return false;
@@ -53,7 +54,7 @@ bool IsControl(const char32_t& uchar) {
   return false;
 }
 
-bool IsPunctuation(const char32_t& uchar) {
+bool IsPunctuation(const UChar32& uchar) {
   if ((uchar >= 33 and uchar <= 47) or (uchar >= 58 and uchar <= 64) or
       (uchar >= 91 and uchar <= 96) or (uchar >= 123 and uchar <= 126)) {
     return true;
@@ -87,6 +88,83 @@ icu::UnicodeString RTrim(const icu::UnicodeString& text) {
 
 icu::UnicodeString Strip(const icu::UnicodeString& text) {
   return LTrim(RTrim(text));
+}
+
+bool IsChineseChar(const UChar32& uchar) {
+  if ((uchar >= U'\U00004E00' && uchar <= U'\U00009FFF') ||
+      (uchar >= U'\U00003400' && uchar <= U'\U00004DBF') ||
+      (uchar >= U'\U00020000' && uchar <= U'\U0002A6DF') ||
+      (uchar >= U'\U0002A700' && uchar <= U'\U0002B73F') ||
+      (uchar >= U'\U0002B740' && uchar <= U'\U0002B81F') ||
+      (uchar >= U'\U0002B820' && uchar <= U'\U0002CEAF') ||
+      (uchar >= U'\U0000F900' && uchar <= U'\U0000FAFF') ||
+      (uchar >= U'\U0002F800' && uchar <= U'\U0002FA1F')) {
+    return true;
+  }
+  return false;
+}
+
+icu::UnicodeString CleanText(const icu::UnicodeString& text) {
+  icu::UnicodeString output;
+
+  auto length = text.length();
+  UErrorCode status = U_ZERO_ERROR;
+  UChar32 uchars[length];
+  text.toUTF32(uchars, length, status);
+
+  for (auto& uchar : uchars) {
+    if (uchar == U'\U00000000' || uchar == U'\U0000FFFD' || IsControl(uchar)) {
+      continue;
+    }
+    if (IsWhiteSpace(uchar)) {
+      output += static_cast<UChar32>(' ');
+    } else {
+      output += uchar;
+    }
+  }
+  return output;
+}
+
+std::vector<icu::UnicodeString> WhitespaceTokenize(
+    const icu::UnicodeString& text) {
+  std::vector<icu::UnicodeString> outputs;
+  icu::UnicodeString output;
+  auto length = text.length();
+  UChar32 delimiter(U' ');
+  int32_t start = 0;
+  auto idx = text.indexOf(delimiter, start);
+  while (idx != -1) {
+    text.extract(start, idx - start, output);
+    outputs.push_back(output);
+    output.remove();
+    start = idx + 1;
+    idx = text.indexOf(delimiter, start);
+  }
+  if (start < length - 1) {
+    text.extract(start, length - start, output);
+    outputs.push_back(output);
+  }
+  return outputs;
+}
+
+icu::UnicodeString TokenizeChineseChars(const icu::UnicodeString& text) {
+  icu::UnicodeString output;
+
+  auto length = text.length();
+  UErrorCode status = U_ZERO_ERROR;
+  UChar32 uchars[length];
+  text.toUTF32(uchars, length, status);
+
+  for (auto& uchar : uchars) {
+    if (IsChineseChar(uchar)) {
+      output += static_cast<UChar32>(' ');
+      output += uchar;
+      output += static_cast<UChar32>(' ');
+    } else {
+      output += uchar;
+    }
+  }
+  return output;
 }
 
 }  // namespace tokenizers

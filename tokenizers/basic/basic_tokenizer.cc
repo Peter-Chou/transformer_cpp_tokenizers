@@ -1,7 +1,10 @@
-#include "basic_tokenizer.h"
+#include "basic/basic_tokenizer.h"
+
+#include "utils/tokenizer_utils.h"
 
 #include <unicode/brkiter.h>
 #include <unicode/ubrk.h>
+#include <unicode/umachine.h>
 #include <unicode/unistr.h>
 #include <unicode/ustream.h>
 
@@ -12,8 +15,17 @@ namespace tokenizers {
 
 using TokenSpan = BasicTokenizer::TokenSpan;
 
+BasicTokenizer::BasicTokenizer(
+    bool do_lower_case,
+    const std::unordered_set<icu::UnicodeString>& never_split)
+    : do_lower_case_(do_lower_case) {
+  for (auto& token : never_split) {
+    AddSpecialToken(token);
+  }
+}
+
 void BasicTokenizer::AddSpecialToken(const icu::UnicodeString& token) {
-  special_tokens_.push_back(token);
+  special_tokens_.insert(token);
 
   icu::BreakIterator* boundary;
   UErrorCode status = U_ZERO_ERROR;
@@ -48,6 +60,43 @@ std::vector<icu::UnicodeString> BasicTokenizer::SplitBySpecialToken(
     sub_texts.push_back(icu::UnicodeString(text, start, text.length() - start));
   }
   return sub_texts;
+}
+
+std::vector<icu::UnicodeString> BasicTokenizer::SplitByPunctuation(
+    const icu::UnicodeString& text) {
+  if (auto it = special_tokens_.find(text); it != special_tokens_.end()) {
+    return {text};
+  }
+  std::vector<icu::UnicodeString> outputs;
+  icu::UnicodeString temp_str;
+  std::vector<std::vector<UChar32>> temp_chars;
+  bool start_new_word = true;
+
+  auto length = text.length();
+  UErrorCode status = U_ZERO_ERROR;
+  UChar32 uchars[length];
+  text.toUTF32(uchars, length, status);
+  for (auto& uchar : uchars) {
+    if (IsPunctuation(uchar)) {
+      temp_chars.push_back(std::vector<UChar32>{uchar});
+      start_new_word = true;
+    } else {
+      if (start_new_word) {
+        temp_chars.push_back(std::vector<UChar32>{});
+      }
+      start_new_word = false;
+      temp_chars.back().push_back(uchar);
+    }
+  }
+  for (const auto& uchar_list : temp_chars) {
+    temp_str.remove();
+    for (const auto& uchar : uchar_list) {
+      temp_str += uchar;
+    }
+    outputs.push_back(temp_str);
+  }
+
+  return outputs;
 }
 
 std::vector<TokenSpan> BasicTokenizer::getSpecialTokenSpans(
@@ -152,6 +201,34 @@ void BasicTokenizer::addUcharToSet(const icu::UnicodeString& uchar,
     map[uchar] = std::set<int>{token_idx};
     char_ids_map_list_.push_back(map);
   }
+}
+
+std::vector<icu::UnicodeString> BasicTokenizer::Tokenize(
+    icu::UnicodeString& text) {
+  text = CleanText(text);
+  if (tokenize_chinese_chars_) {
+    text = TokenizeChineseChars(text);
+  }
+  auto sub_texts = SplitBySpecialToken(text);
+
+  icu::UnicodeString processed_text;
+  for (auto& sub_text : sub_texts) {
+    for (auto& token : WhitespaceTokenize(sub_text)) {
+      // orig_tokens.push_back(token);
+      if (auto it = special_tokens_.find(token); it == special_tokens_.end()) {
+        if (do_lower_case_) {
+          token = token.toLower();
+        }
+      }
+      auto sub_tokens = SplitByPunctuation(token);
+      for (auto& sub_token : sub_tokens) {
+        processed_text += static_cast<UChar32>(U' ');
+        processed_text += sub_token;
+      }
+    }
+  }
+  processed_text = LTrim(processed_text);
+  return WhitespaceTokenize(processed_text);
 }
 
 }  // namespace tokenizers
