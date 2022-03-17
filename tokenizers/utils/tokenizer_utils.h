@@ -16,6 +16,7 @@ icu::UnicodeString LTrim(const icu::UnicodeString& text);
 icu::UnicodeString RTrim(const icu::UnicodeString& text);
 icu::UnicodeString Strip(const icu::UnicodeString& text);
 icu::UnicodeString CleanText(const icu::UnicodeString& text);
+icu::UnicodeString StripAccents(const icu::UnicodeString& text);
 icu::UnicodeString TokenizeChineseChars(const icu::UnicodeString& text);
 std::vector<icu::UnicodeString> WhitespaceTokenize(
     const icu::UnicodeString& text);

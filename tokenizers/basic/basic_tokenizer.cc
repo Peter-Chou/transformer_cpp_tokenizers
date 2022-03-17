@@ -219,6 +219,9 @@ std::vector<icu::UnicodeString> BasicTokenizer::Tokenize(
         if (do_lower_case_) {
           token = token.toLower();
         }
+        if (strip_accents_) {
+          token = StripAccents(token);
+        }
       }
       auto sub_tokens = SplitByPunctuation(token);
       for (auto& sub_token : sub_tokens) {

@@ -11,6 +11,8 @@
 #include <vector>
 
 namespace tokenizers {
+///  Basic Tokenization of a piece of text. Split on "white spaces" only, for
+///  sub-word tokenization, see WordPieceTokenizer.
 class BasicTokenizer {
  public:
   using CharIdsMap = std::unordered_map<icu::UnicodeString, std::set<int>>;
@@ -36,7 +38,7 @@ class BasicTokenizer {
   std::vector<icu::UnicodeString> SplitByPunctuation(
       const icu::UnicodeString& text);
 
-private:
+ private:
   void addUcharToSet(const icu::UnicodeString& uchar, int list_pos,
                      int token_idx);
 
@@ -48,6 +50,7 @@ private:
                                                  "attention_mask"};
   bool do_lower_case_ = true;
   bool tokenize_chinese_chars_ = true;
+  bool strip_accents_ = false;
   std::string padding_side_ = "right";
   std::string truncation_side_ = "right";
 };

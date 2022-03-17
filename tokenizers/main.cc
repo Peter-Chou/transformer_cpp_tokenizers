@@ -1,9 +1,12 @@
 
 #include "basic/basic_tokenizer.h"
 #include "bert/bert_tokenizer.h"
+#include "unilib/uninorms.h"
 #include "utils/tokenizer_utils.h"
 
 #include <unicode/unistr.h>
+
+#include <string>
 
 using namespace tokenizers;
 
@@ -11,6 +14,7 @@ using namespace tokenizers;
 #include <unicode/ustream.h>
 
 #include <algorithm>
+#include <codecvt>
 #include <cstdio>
 #include <functional>
 #include <iostream>
@@ -53,12 +57,11 @@ int main() {
   // std::cout << std::boolalpha;
   // std::cout << res << std::endl;
 
-  icu::UnicodeString text("\t[CLS]You aRe gOod,[SEP] 你是\t最棒的！[SEP]\t");
-  // icu::UnicodeString text("[CLS] you");
+  icu::UnicodeString text(
+      "\t[CLS]You  aReü gOod,[SEP]  ü 你是\t最棒的！[SEP]\t");
 
   auto tokenizer = BasicTokenizer();
   auto sub_texts = tokenizer.Tokenize(text);
-  // auto sub_texts = WhitespaceTokenize(text);
   for (auto& output : sub_texts) {
     std::cout << output << std::endl;
   }
@@ -83,4 +86,20 @@ int main() {
   // for (auto& output : outputs) {
   //   std::cout << output << std::endl;
   // }
+  // std::u32string std_str = U"hello, 你好呀。ü饭吃拉么？";
+  // icu::UnicodeString text("hello, 你好呀。ü饭吃拉么？");
+
+  // ufal::unilib::uninorms::nfd(std_str);
+  // std::cout << std_str.size() << std::endl;
+
+  // icu::UnicodeString text = icu::UnicodeString::fromUTF32(
+  //     reinterpret_cast<const UChar32*>(std_str.c_str()), std_str.size());
+  // UErrorCode status = U_ZERO_ERROR;
+  // UChar32 temp[text.length()];
+  // text.toUTF32(temp, text.length(), status);
+  // std::u32string std_text =
+  //     std::u32string(reinterpret_cast<const char32_t*>(temp), text.length());
+  // std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> converter;
+  // std::cout << converter.to_bytes(std_text) << std::endl;
+  // std::cout << converter.to_bytes(std_str) << std::endl;
 }

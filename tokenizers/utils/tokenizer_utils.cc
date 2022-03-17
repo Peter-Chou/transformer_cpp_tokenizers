@@ -4,6 +4,8 @@
 #include "unilib/unicode.h"
 #include "unilib/uninorms.h"
 
+#include <unicode/umachine.h>
+
 #include <cstdint>
 #include <unordered_map>
 
@@ -165,6 +167,25 @@ icu::UnicodeString TokenizeChineseChars(const icu::UnicodeString& text) {
     }
   }
   return output;
+}
+
+icu::UnicodeString StripAccents(const icu::UnicodeString& text) {
+  icu::UnicodeString result;
+
+  auto length = text.length();
+  UErrorCode status = U_ZERO_ERROR;
+  UChar32 temp[length];
+  text.toUTF32(temp, length, status);
+  std::u32string std_text =
+      std::u32string(reinterpret_cast<const char32_t*>(temp), length);
+  unilib::uninorms::nfd(std_text);
+  for (auto& u32_char : std_text) {
+    auto cat = unilib::unicode::category(u32_char);
+    if (cat != unilib::unicode::Mn) {
+      result += static_cast<UChar32>(u32_char);
+    }
+  }
+  return result;
 }
 
 }  // namespace tokenizers
