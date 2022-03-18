@@ -2,5 +2,8 @@
 
 namespace tokenizers {
 
-void BertTokenizer::Tokenize(const icu::UnicodeString& text) {}
+std::vector<icu::UnicodeString> BertTokenizer::TokenizeImpl(
+    const icu::UnicodeString& text) {
+  std::vector<icu::UnicodeString> split_tokens;
+}
 }  // namespace tokenizers

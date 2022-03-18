@@ -1,5 +1,6 @@
 
 #include "basic/basic_tokenizer.h"
+#include "basic/wordpiece_tokenizer.h"
 #include "bert/bert_tokenizer.h"
 #include "unilib/uninorms.h"
 #include "utils/tokenizer_utils.h"
@@ -58,10 +59,17 @@ int main() {
   // std::cout << res << std::endl;
 
   icu::UnicodeString text(
-      "\t[CLS]You  aReü gOod,[SEP]  ü 你是\t最棒的！[SEP]\t");
+      "\t[CLS]You  aReü gOod,[SEP] unaffable example ü "
+      "你是\t最棒的！[SEP]\t");
 
-  auto tokenizer = BasicTokenizer();
+  auto bert_tokenizer = BertTokenizer(
+      "/home/peter/projects/cgec-initialized-with-plm/vocabs/vocab.txt");
+
+  auto tokenizer = WordpieceTokenizer(bert_tokenizer.getMutableVocab());
   auto sub_texts = tokenizer.Tokenize(text);
+
+  // auto tokenizer = BasicTokenizer();
+  // auto sub_texts = tokenizer.Tokenize(text);
   for (auto& output : sub_texts) {
     std::cout << output << std::endl;
   }
