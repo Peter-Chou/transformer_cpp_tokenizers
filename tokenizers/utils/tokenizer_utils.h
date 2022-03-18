@@ -5,6 +5,7 @@
 
 #include <regex>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 namespace tokenizers {
@@ -20,5 +21,9 @@ icu::UnicodeString StripAccents(const icu::UnicodeString& text);
 icu::UnicodeString TokenizeChineseChars(const icu::UnicodeString& text);
 std::vector<icu::UnicodeString> WhitespaceTokenize(
     const icu::UnicodeString& text);
+
+std::vector<icu::UnicodeString> SplitByPunctuation(
+    const icu::UnicodeString& text,
+    std::unordered_set<icu::UnicodeString>* special_tokens = nullptr);
 
 }  // namespace tokenizers

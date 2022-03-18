@@ -4,24 +4,42 @@
 #include "utils/tokenizer_utils.h"
 
 #include <unicode/unistr.h>
+#include <unicode/ustream.h>
+
+#include <iostream>
 
 namespace tokenizers {
 
 std::vector<icu::UnicodeString> WordpieceTokenizer::Tokenize(
     icu::UnicodeString text) {
   std::vector<icu::UnicodeString> outputs;
+  // std::cout << text << std::endl;
   bool is_bad = false;
   int start = 0;
   int end;
   icu::UnicodeString cur_substr;
   icu::UnicodeString temp_str;
   std::vector<icu::UnicodeString> sub_tokens;
+  // std::cout << "1: " << text << std::endl;
+  for (auto& t : WhitespaceTokenize(text)) {
+    // std::cout << "2: " << text << "\t" << t << std::endl;
+  }
   for (const auto& token : WhitespaceTokenize(text)) {
     int token_length = token.length();
     if (token_length > max_input_chars_per_word_) {
       outputs.push_back(unk_token_);
       continue;
     }
+    // std::cout << token << "\t" << token_length << std::endl;
+    if (token_length == 1) {
+      if (auto it = vocab_ptr_->find(token); it != vocab_ptr_->end()) {
+        outputs.push_back(token);
+      } else {
+        outputs.push_back(unk_token_);
+      }
+      continue;
+    }
+
     while (start < token_length) {
       end = token_length;
       cur_substr.remove();

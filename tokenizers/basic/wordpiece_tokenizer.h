@@ -10,9 +10,10 @@
 namespace tokenizers {
 class WordpieceTokenizer {
  public:
-  WordpieceTokenizer(
-      std::unordered_map<icu::UnicodeString, int>* vocab_ptr = nullptr)
-      : vocab_ptr_(vocab_ptr) {}
+  WordpieceTokenizer() = default;
+  WordpieceTokenizer(const icu::UnicodeString& unk_token,
+                     std::unordered_map<icu::UnicodeString, int>* vocab_ptr)
+      : unk_token_(unk_token), vocab_ptr_(vocab_ptr) {}
 
   /// Tokenizes a piece of text into its word pieces. This uses a greedy
   /// longest-match-first algorithm to perform tokenization using the given

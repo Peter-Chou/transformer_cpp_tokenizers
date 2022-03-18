@@ -3,6 +3,7 @@
 #include "unicode/regex.h"
 #include "unilib/unicode.h"
 #include "unilib/uninorms.h"
+#include "utils/unistr_utils.h"
 
 #include <unicode/umachine.h>
 
@@ -129,6 +130,10 @@ icu::UnicodeString CleanText(const icu::UnicodeString& text) {
 
 std::vector<icu::UnicodeString> WhitespaceTokenize(
     const icu::UnicodeString& text) {
+  if (text.length() == 1) {
+    return {text};
+  }
+
   std::vector<icu::UnicodeString> outputs;
   icu::UnicodeString output;
   auto length = text.length();
@@ -142,7 +147,7 @@ std::vector<icu::UnicodeString> WhitespaceTokenize(
     start = idx + 1;
     idx = text.indexOf(delimiter, start);
   }
-  if (start < length - 1) {
+  if (start < length) {
     text.extract(start, length - start, output);
     outputs.push_back(output);
   }
@@ -186,6 +191,46 @@ icu::UnicodeString StripAccents(const icu::UnicodeString& text) {
     }
   }
   return result;
+}
+
+std::vector<icu::UnicodeString> SplitByPunctuation(
+    const icu::UnicodeString& text,
+    std::unordered_set<icu::UnicodeString>* special_tokens) {
+  if (special_tokens) {
+    if (auto it = special_tokens->find(text); it != special_tokens->end()) {
+      return {text};
+    }
+  }
+  std::vector<icu::UnicodeString> outputs;
+  icu::UnicodeString temp_str;
+  std::vector<std::vector<UChar32>> temp_chars;
+  bool start_new_word = true;
+
+  auto length = text.length();
+  UErrorCode status = U_ZERO_ERROR;
+  UChar32 uchars[length];
+  text.toUTF32(uchars, length, status);
+  for (auto& uchar : uchars) {
+    if (IsPunctuation(uchar)) {
+      temp_chars.push_back(std::vector<UChar32>{uchar});
+      start_new_word = true;
+    } else {
+      if (start_new_word) {
+        temp_chars.push_back(std::vector<UChar32>{});
+      }
+      start_new_word = false;
+      temp_chars.back().push_back(uchar);
+    }
+  }
+  for (const auto& uchar_list : temp_chars) {
+    temp_str.remove();
+    for (const auto& uchar : uchar_list) {
+      temp_str += uchar;
+    }
+    outputs.push_back(temp_str);
+  }
+
+  return outputs;
 }
 
 }  // namespace tokenizers

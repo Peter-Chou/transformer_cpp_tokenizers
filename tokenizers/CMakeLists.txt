@@ -1,6 +1,7 @@
 # Enable modules to include each other's files
 include_directories(.)
 
+add_subdirectory(fundamental)
 add_subdirectory(basic)
 add_subdirectory(bert)
 add_subdirectory(unilib)
@@ -11,8 +12,9 @@ add_executable(main
     )
 
 target_link_libraries(main PUBLIC
-    bert_tokenizer
     basic_tokenizer
+    bert_tokenizer
+    fundamental_tokenizer
     utils
     unilib
     ${ICU_LIBRARIES}

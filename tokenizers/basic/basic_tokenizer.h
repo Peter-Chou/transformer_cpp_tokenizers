@@ -15,43 +15,23 @@ namespace tokenizers {
 ///  sub-word tokenization, see WordPieceTokenizer.
 class BasicTokenizer {
  public:
-  using CharIdsMap = std::unordered_map<icu::UnicodeString, std::set<int>>;
-  using CharIdsMapList = std::vector<CharIdsMap>;
+  BasicTokenizer() = default;
 
-  struct TokenSpan {
-    int start;
-    int length;
-  };
-  BasicTokenizer(bool do_lower_case = true,
-                 const std::unordered_set<icu::UnicodeString>& never_split = {
-                     "[UNK]", "[SEP]", "[PAD]", "[CLS]", "[MASK]"});
+  BasicTokenizer(bool do_lower_case,
+                 bool tokenize_chinese_chars, bool strip_accents,
+                 std::unordered_set<icu::UnicodeString>* special_token_ptr)
+      : do_lower_case_(do_lower_case),
+        tokenize_chinese_chars_(tokenize_chinese_chars),
+        strip_accents_(strip_accents),
+        special_tokens_ptr_(special_token_ptr) {}
 
-  std::vector<icu::UnicodeString> Tokenize(icu::UnicodeString& text);
+  std::vector<icu::UnicodeString> Tokenize(const icu::UnicodeString& text);
 
-  void AddSpecialToken(const icu::UnicodeString& token);
-  std::vector<icu::UnicodeString> SplitBySpecialToken(
-      const icu::UnicodeString& text);
-  TokenSpan GetSpecialTokenSpan(const icu::UnicodeString& text, int start);
-  std::vector<TokenSpan> getSpecialTokenSpans(const icu::UnicodeString& text);
+private:
+  std::unordered_set<icu::UnicodeString>* special_tokens_ptr_;
 
-  CharIdsMapList& GetTokenSetMapList() { return char_ids_map_list_; }
-  std::vector<icu::UnicodeString> SplitByPunctuation(
-      const icu::UnicodeString& text);
-
- private:
-  void addUcharToSet(const icu::UnicodeString& uchar, int list_pos,
-                     int token_idx);
-
-  CharIdsMapList char_ids_map_list_;
-  // std::vector<icu::UnicodeString> special_tokens_;
-  std::unordered_set<icu::UnicodeString> special_tokens_;
-
-  std::vector<std::string> model_input_names_ = {"input_ids", "token_type_ids",
-                                                 "attention_mask"};
   bool do_lower_case_ = true;
   bool tokenize_chinese_chars_ = true;
   bool strip_accents_ = false;
-  std::string padding_side_ = "right";
-  std::string truncation_side_ = "right";
 };
 }  // namespace tokenizers

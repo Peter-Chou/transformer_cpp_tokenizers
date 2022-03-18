@@ -2,11 +2,12 @@
 
 #include "basic/basic_tokenizer.h"
 #include "basic/wordpiece_tokenizer.h"
-#include "fundamental_tokenizer.h"
+#include "fundamental/fundamental_tokenizer.h"
 
 #include <unicode/unistr.h>
 
 #include <fstream>
+#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -15,31 +16,28 @@ class BertTokenizer : public FundamentalTokenizer {
  public:
   struct Options {
     std::string vocab_file;
-    icu::UnicodeString unk_token = "[UNK]";
-    icu::UnicodeString sep_token = "[SEP]";
-    icu::UnicodeString pad_token = "[PAD]";
-    icu::UnicodeString cls_token = "[CLS]";
-    icu::UnicodeString mask_token = "[MASK]";
-
+    FundamentalTokenizer::Options f_options;
     bool strip_accents = false;
     bool do_lower_case = true;
     bool do_basic_tokenize = true;
     bool tokenize_chinese_chars = true;
   };
 
-  BertTokenizer(Options options) {
+  static std::unique_ptr<FundamentalTokenizer> CreateBertTokenizer(
+      Options options);
+
+  BertTokenizer(Options options)
+      : FundamentalTokenizer(options.f_options),
+        do_basic_tokenize_(options.do_basic_tokenize) {
     loadVocab(options.vocab_file);
     for (const auto& [token, id] : token_id_map_) {
       id_token_map_[id] = token;
     }
-    special_tokens_ = {options.unk_token, options.sep_token, options.pad_token,
-                       options.cls_token, options.mask_token};
-    // basic_tokenizer_ =
-    //   BasicTokenizer(options.do_lower_case,
-    //                    {options.unk_token, options.sep_token,
-    //                    options.pad_token,
-    //                     options.cls_token, options.mask_token});
-    wordpiece_tokenizer_ = WordpieceTokenizer(&token_id_map_);
+    basic_tokenizer_ =
+        BasicTokenizer(options.do_lower_case, options.tokenize_chinese_chars,
+                       options.strip_accents, GetMutableSpecialTokens());
+    wordpiece_tokenizer_ =
+        WordpieceTokenizer(options.f_options.unk_token, &token_id_map_);
   }
   std::vector<icu::UnicodeString> TokenizeImpl(const icu::UnicodeString& text);
 
