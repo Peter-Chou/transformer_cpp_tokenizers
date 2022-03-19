@@ -3,6 +3,7 @@
 #include "basic/basic_tokenizer.h"
 #include "basic/wordpiece_tokenizer.h"
 #include "fundamental/fundamental_tokenizer.h"
+#include "utils/tokenizer_utils.h"
 
 #include <unicode/unistr.h>
 
@@ -52,7 +53,7 @@ class BertTokenizer : public FundamentalTokenizer {
     if (fin.is_open()) {
       std::string token;
       while (std::getline(fin, token)) {
-        token_id_map_[icu::UnicodeString::fromUTF8(token)] = idx;
+        token_id_map_[RTrim(icu::UnicodeString::fromUTF8(token))] = idx;
         ++idx;
       }
     }
