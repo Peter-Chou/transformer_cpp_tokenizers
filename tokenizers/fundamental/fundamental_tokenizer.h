@@ -3,8 +3,10 @@
 #include "unicode/unistr.h"
 #include "utils/unistr_utils.h"
 
+#include <optional>
 #include <set>
 #include <string>
+#include <tuple>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -20,6 +22,17 @@ class FundamentalTokenizer {
     int length;
   };
 
+  struct EncodeOutput {
+    std::vector<int> input_ids;
+    std::optional<std::vector<int>> attention_mask;
+    std::optional<std::vector<int>> token_type_ids;
+  };
+
+  enum class TruncateStrategy : int { ONLY_FIRST, ONLY_SECOND, LONGEST_FIRST };
+  enum class TruncateSide : int { LEFT, RIGHT };
+  enum class PaddingStrategy : int { DO_NOT_PAD, MAX_LENGTH, LONGEST };
+  enum class PaddingSide : int { LEFT, RIGHT };
+
   struct Options {
     icu::UnicodeString unk_token = "[UNK]";
     icu::UnicodeString sep_token = "[SEP]";
@@ -28,15 +41,38 @@ class FundamentalTokenizer {
     icu::UnicodeString mask_token = "[MASK]";
   };
 
-  FundamentalTokenizer() = delete;
+  // FundamentalTokenizer() = delete;
 
   FundamentalTokenizer(Options options);
 
   virtual ~FundamentalTokenizer() = default;
 
+  void Encode(
+      const icu::UnicodeString* text_a,
+      const icu::UnicodeString* text_b = nullptr,
+      bool add_special_tokens = true, int max_length = 512,
+      TruncateStrategy truncate_stratety = TruncateStrategy::LONGEST_FIRST,
+
+      PaddingStrategy padding_strategy = PaddingStrategy::MAX_LENGTH,
+      bool return_token_type_ids = true, bool return_attention_mask = true);
+
   std::vector<icu::UnicodeString> Tokenize(const icu::UnicodeString& text);
   virtual std::vector<icu::UnicodeString> TokenizeImpl(
       const icu::UnicodeString& text) = 0;
+  virtual int GetTokenId(const icu::UnicodeString& token) = 0;
+  virtual std::vector<int> GetInputIds(
+      const std::vector<icu::UnicodeString>& tokens) = 0;
+  virtual int ConvertTokenToId(const icu::UnicodeString& token) = 0;
+  virtual icu::UnicodeString ConvertIdToToken(int idx) = 0;
+  virtual std::vector<int> GetSpecialTokensMask(
+      const std::vector<int>* token_ids_0,
+      const std::vector<int>* token_ids_1 = nullptr) = 0;
+  virtual std::vector<int> BuildInputsWithSpecialTokens(
+      const std::vector<int>* token_ids_0,
+      const std::vector<int>* token_ids_1 = nullptr);
+  virtual std::vector<int> CreateTokenTypeIdsFromSequences(
+      const std::vector<int>* token_ids_0,
+      const std::vector<int>* token_ids_1 = nullptr);
 
   void AddSpecialToken(const icu::UnicodeString& token);
   std::vector<icu::UnicodeString> SplitBySpecialToken(
@@ -50,8 +86,17 @@ class FundamentalTokenizer {
   }
 
  protected:
+  bool pad(EncodeOutput* output, int max_length = 512,
+           PaddingStrategy padding_strategy = PaddingStrategy::MAX_LENGTH,
+           bool return_attention_mask = true);
+
   void addUcharToSet(const icu::UnicodeString& uchar, int list_pos,
                      int token_idx);
+  int numSpecialTokensToAdd(bool pair = false);
+  bool truncateSequence(
+      std::vector<int>* ids, std::vector<int>* pair_ids = nullptr,
+      int num_tokens_to_move = 0,
+      TruncateStrategy truncate_strategy = TruncateStrategy::LONGEST_FIRST);
 
   CharIdsMapList char_ids_map_list_;
   std::unordered_set<icu::UnicodeString> special_tokens_;
@@ -61,8 +106,17 @@ class FundamentalTokenizer {
   bool do_lower_case_ = true;
   bool tokenize_chinese_chars_ = true;
   bool strip_accents_ = false;
-  std::string padding_side_ = "right";
-  std::string truncation_side_ = "right";
+
+  icu::UnicodeString unk_token_ = "[UNK]";
+  icu::UnicodeString sep_token_ = "[SEP]";
+  icu::UnicodeString pad_token_ = "[PAD]";
+  icu::UnicodeString cls_token_ = "[CLS]";
+  icu::UnicodeString mask_token_ = "[MASK]";
+
+  int pad_token_type_id_ = 0;
+
+  TruncateSide truncate_side_ = TruncateSide::RIGHT;
+  PaddingSide padding_side_ = PaddingSide::RIGHT;
 };
 
 }  // namespace tokenizers

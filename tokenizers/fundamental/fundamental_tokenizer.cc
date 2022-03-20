@@ -1,14 +1,24 @@
 #include "fundamental/fundamental_tokenizer.h"
 
+#include "bert/bert_tokenizer.h"
+#include "utils/tokenizer_utils.h"
+
 #include <unicode/brkiter.h>
 #include <unicode/unistr.h>
 
 #include <algorithm>
+#include <iostream>
+#include <iterator>
 
 namespace tokenizers {
 using TokenSpan = FundamentalTokenizer::TokenSpan;
 
-FundamentalTokenizer::FundamentalTokenizer(Options options) {
+FundamentalTokenizer::FundamentalTokenizer(Options options)
+    : unk_token_(options.unk_token),
+      sep_token_(options.sep_token),
+      pad_token_(options.pad_token),
+      cls_token_(options.cls_token),
+      mask_token_(options.mask_token) {
   AddSpecialToken(options.unk_token);
   AddSpecialToken(options.sep_token);
   AddSpecialToken(options.pad_token);
@@ -16,16 +26,74 @@ FundamentalTokenizer::FundamentalTokenizer(Options options) {
   AddSpecialToken(options.mask_token);
 }
 
+void FundamentalTokenizer::Encode(const icu::UnicodeString* text_a,
+                                  const icu::UnicodeString* text_b,
+                                  bool add_special_tokens, int max_length,
+                                  TruncateStrategy truncate_stratety,
+                                  PaddingStrategy padding_strategy,
+                                  bool return_token_type_ids,
+                                  bool return_attention_mask) {
+  EncodeOutput outputs;
+  auto text_a_token_ids = GetInputIds(Tokenize(*text_a));
+  std::vector<int> text_b_token_ids;
+  if (text_b) {
+    text_b_token_ids = GetInputIds(Tokenize(*text_b));
+  }
+
+  int total_length = text_a_token_ids.size() + text_b_token_ids.size();
+  if (add_special_tokens) {
+    total_length +=
+        numSpecialTokensToAdd(/* pair= */ !text_b_token_ids.empty());
+  }
+
+  truncateSequence(&text_a_token_ids, &text_b_token_ids,
+                   total_length - max_length, truncate_stratety);
+  std::vector<int> sequence;
+  std::vector<int> token_type_ids;
+  if (add_special_tokens) {
+    if (text_b_token_ids.empty()) {
+      sequence = BuildInputsWithSpecialTokens(&text_a_token_ids, nullptr);
+      token_type_ids =
+          CreateTokenTypeIdsFromSequences(&text_a_token_ids, nullptr);
+    } else {
+      sequence =
+          BuildInputsWithSpecialTokens(&text_a_token_ids, &text_b_token_ids);
+      token_type_ids =
+          CreateTokenTypeIdsFromSequences(&text_a_token_ids, &text_b_token_ids);
+    }
+  } else {
+    sequence = text_a_token_ids;
+    if (!text_b_token_ids.empty()) {
+      sequence.insert(sequence.end(), text_b_token_ids.begin(),
+                      text_b_token_ids.end());
+      token_type_ids = std::vector<int>(
+          text_a_token_ids.size() + text_b_token_ids.size(), 0);
+    }
+  }
+  outputs.input_ids = sequence;
+  if (return_token_type_ids) {
+    outputs.token_type_ids = token_type_ids;
+  }
+}
+
 std::vector<icu::UnicodeString> FundamentalTokenizer::Tokenize(
     const icu::UnicodeString& text) {
-  // std::vector<icu::UnicodeString> outputs;
+  std::vector<icu::UnicodeString> outputs;
 
-  // TODO finish it
-  // auto sub_texts = SplitBySpecialToken(text);
-  auto processed_text = ProcessSpecialTokens(text);
+  auto sub_texts = SplitBySpecialToken(Strip(text));
+  for (const auto& sub_text : sub_texts) {
+    if (!sub_text.isEmpty()) {
+      if (auto it = special_tokens_.find(sub_text);
+          it != special_tokens_.end()) {
+        outputs.push_back(sub_text);
+      } else {
+        auto tokens = TokenizeImpl(sub_text);
+        outputs.insert(outputs.end(), tokens.begin(), tokens.end());
+      }
+    }
+  }
 
-  // return outputs;
-  return TokenizeImpl(processed_text);
+  return outputs;
 }
 
 icu::UnicodeString FundamentalTokenizer::ProcessSpecialTokens(
@@ -183,6 +251,157 @@ void FundamentalTokenizer::addUcharToSet(const icu::UnicodeString& uchar,
     map[uchar] = std::set<int>{token_idx};
     char_ids_map_list_.push_back(map);
   }
+}
+
+std::vector<int> FundamentalTokenizer::BuildInputsWithSpecialTokens(
+    const std::vector<int>* token_ids_0, const std::vector<int>* token_ids_1) {
+  if (token_ids_1 != nullptr) {
+    std::vector<int> token_ids = *token_ids_0;
+    token_ids.insert(token_ids.end(), token_ids_1->begin(), token_ids_1->end());
+    return token_ids;
+  }
+  return *token_ids_0;
+}
+
+std::vector<int> FundamentalTokenizer::CreateTokenTypeIdsFromSequences(
+    const std::vector<int>* token_ids_0, const std::vector<int>* token_ids_1) {
+  std::vector<int> token_ids(token_ids_0->size(), 0);
+
+  if (token_ids_1) {
+    std::vector<int> ids(token_ids_1->size(), 1);
+    token_ids.insert(token_ids.end(), ids.begin(), ids.end());
+  }
+  return token_ids;
+}
+
+int FundamentalTokenizer::numSpecialTokensToAdd(bool pair) {
+  std::vector<int> text_a;
+  if (pair) {
+    // std::vector<int> text_b;
+    return BuildInputsWithSpecialTokens(&text_a, &text_a).size();
+  }
+  return BuildInputsWithSpecialTokens(&text_a, nullptr).size();
+}
+
+bool FundamentalTokenizer::truncateSequence(
+    std::vector<int>* ids, std::vector<int>* pair_ids, int num_tokens_to_move,
+    TruncateStrategy truncate_strategy) {
+  if (num_tokens_to_move <= 0) {
+    return true;
+  }
+  if (pair_ids->empty()) {
+    if (truncate_strategy == TruncateStrategy::ONLY_FIRST ||
+        truncate_strategy == TruncateStrategy::LONGEST_FIRST) {
+      if (ids->size() > num_tokens_to_move) {
+        int num_to_keep = ids->size() - num_tokens_to_move;
+        if (truncate_side_ == TruncateSide::RIGHT) {
+          ids->resize(num_to_keep);
+        } else {
+          std::vector<int>(ids->begin() + num_tokens_to_move, ids->end())
+              .swap(*ids);
+        }
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  } else {
+    std::vector<int>* target_ids;
+    if (truncate_strategy == TruncateStrategy::LONGEST_FIRST) {
+      for (int i = 0; i < num_tokens_to_move; ++i) {
+        target_ids = ids;
+        if (ids->size() < pair_ids->size()) {
+          target_ids = pair_ids;
+        }
+        if (truncate_side_ == TruncateSide::RIGHT) {
+          target_ids->pop_back();
+        } else {
+          target_ids->erase(target_ids->begin());
+        }
+      }
+    } else {
+      target_ids = ids;
+      if (truncate_strategy == TruncateStrategy::ONLY_SECOND) {
+        target_ids = pair_ids;
+      }
+      if (target_ids->size() > num_tokens_to_move) {
+        int num_to_keep = target_ids->size() - num_tokens_to_move;
+        if (truncate_side_ == TruncateSide::RIGHT) {
+          target_ids->resize(num_to_keep);
+        } else {
+          std::vector<int>(target_ids->begin() + num_tokens_to_move,
+                           target_ids->end())
+              .swap(*target_ids);
+        }
+      } else {
+        return false;
+      }
+    }
+  }
+  return false;
+}
+
+bool FundamentalTokenizer::pad(EncodeOutput* output, int max_length,
+                               PaddingStrategy padding_strategy,
+                               bool return_attention_mask) {
+  // TODO test this function
+  auto& required_ids = output->input_ids;
+  int required_ids_size = required_ids.size();
+  if (padding_strategy == PaddingStrategy::LONGEST) {
+    max_length = required_ids_size;
+  }
+  if (padding_strategy != PaddingStrategy::DO_NOT_PAD &&
+      required_ids_size != max_length) {
+    int pad_token_id = GetTokenId(pad_token_);
+    int diff = max_length - required_ids_size;
+    if (padding_side_ == PaddingSide::RIGHT) {
+      required_ids.reserve(max_length);
+      std::generate_n(std::back_inserter(required_ids), diff,
+                      [pad_token_id] { return pad_token_id; });
+      if (return_attention_mask) {
+        auto attention_mask = std::vector<int>(required_ids_size, 1);
+        attention_mask.reserve(max_length);
+        std::generate_n(std::back_inserter(attention_mask), diff,
+                        [] { return 0; });
+        output->attention_mask = std::move(attention_mask);
+      }
+      auto& optional = output->token_type_ids;
+      if (optional) {
+        auto& token_type_ids = (*optional);
+        token_type_ids.reserve(max_length);
+        std::generate_n(std::back_inserter(token_type_ids), diff,
+                        [this] { return pad_token_type_id_; });
+      }
+    } else {
+      std::vector<int> tmp_input_ids(diff, pad_token_id);
+      tmp_input_ids.reserve(max_length);
+      tmp_input_ids.insert(tmp_input_ids.end(), required_ids.begin(),
+                           required_ids.end());
+      required_ids = std::move(tmp_input_ids);
+
+      if (return_attention_mask) {
+        auto attention_mask = std::vector<int>(diff, 0);
+        attention_mask.reserve(max_length);
+        std::generate_n(std::back_inserter(attention_mask), required_ids_size,
+                        [] { return 1; });
+        output->attention_mask = std::move(attention_mask);
+      }
+
+      auto& optional = output->token_type_ids;
+      if (optional) {
+        auto& token_type_ids = (*optional);
+
+        std::vector<int> tmp_token_type_ids(diff, pad_token_type_id_);
+        tmp_token_type_ids.reserve(max_length);
+        tmp_token_type_ids.insert(tmp_token_type_ids.end(),
+                                  token_type_ids.begin(), token_type_ids.end());
+        token_type_ids = std::move(tmp_token_type_ids);
+      }
+    }
+  }
+
+  return true;
 }
 
 }  // namespace tokenizers

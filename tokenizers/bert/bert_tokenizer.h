@@ -27,39 +27,42 @@ class BertTokenizer : public FundamentalTokenizer {
   static std::unique_ptr<FundamentalTokenizer> CreateBertTokenizer(
       Options options);
 
-  BertTokenizer(Options options)
-      : FundamentalTokenizer(options.f_options),
-        do_basic_tokenize_(options.do_basic_tokenize) {
-    loadVocab(options.vocab_file);
-    for (const auto& [token, id] : token_id_map_) {
-      id_token_map_[id] = token;
-    }
-    basic_tokenizer_ =
-        BasicTokenizer(options.do_lower_case, options.tokenize_chinese_chars,
-                       options.strip_accents, GetMutableSpecialTokens());
-    wordpiece_tokenizer_ =
-        WordpieceTokenizer(options.f_options.unk_token, &token_id_map_);
-  }
-  std::vector<icu::UnicodeString> TokenizeImpl(const icu::UnicodeString& text);
+  BertTokenizer(Options options);
+  std::vector<icu::UnicodeString> TokenizeImpl(
+      const icu::UnicodeString& text) override;
+
+  int ConvertTokenToId(const icu::UnicodeString& token) override;
+  icu::UnicodeString ConvertIdToToken(int idx) override;
+
+  int GetTokenId(const icu::UnicodeString& token) override;
+
+  std::vector<int> GetInputIds(
+      const std::vector<icu::UnicodeString>& tokens) override;
+
+  std::vector<int> BuildInputsWithSpecialTokens(
+      const std::vector<int>* token_ids_0,
+      const std::vector<int>* token_ids_1 = nullptr) override;
+
+  std::vector<int> CreateTokenTypeIdsFromSequences(
+      const std::vector<int>* token_ids_0,
+      const std::vector<int>* token_ids_1 = nullptr) override;
+
+  std::vector<int> GetSpecialTokensMask(
+      const std::vector<int>* token_ids_0,
+      const std::vector<int>* token_ids_1 = nullptr) override;
 
   std::unordered_map<icu::UnicodeString, int>* getMutableVocab() {
     return &token_id_map_;
   }
 
  private:
-  void loadVocab(const std::string& vocab_file) {
-    std::ifstream fin(vocab_file);
-    int idx = 0;
-    if (fin.is_open()) {
-      std::string token;
-      while (std::getline(fin, token)) {
-        token_id_map_[RTrim(icu::UnicodeString::fromUTF8(token))] = idx;
-        ++idx;
-      }
-    }
-  }
+  void loadVocab(const std::string& vocab_file);
 
   bool do_basic_tokenize_ = true;
+
+  int cls_token_id_;
+  int sep_token_id_;
+  int pad_token_id_;
 
   BasicTokenizer basic_tokenizer_;
   WordpieceTokenizer wordpiece_tokenizer_;

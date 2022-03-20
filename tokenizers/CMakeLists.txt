@@ -12,9 +12,9 @@ add_executable(main
     )
 
 target_link_libraries(main PUBLIC
+    fundamental_tokenizer
     basic_tokenizer
     bert_tokenizer
-    fundamental_tokenizer
     utils
     unilib
     ${ICU_LIBRARIES}
