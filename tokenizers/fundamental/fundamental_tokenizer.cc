@@ -26,13 +26,11 @@ FundamentalTokenizer::FundamentalTokenizer(Options options)
   AddSpecialToken(options.mask_token);
 }
 
-void FundamentalTokenizer::Encode(const icu::UnicodeString* text_a,
-                                  const icu::UnicodeString* text_b,
-                                  bool add_special_tokens, int max_length,
-                                  TruncateStrategy truncate_stratety,
-                                  PaddingStrategy padding_strategy,
-                                  bool return_token_type_ids,
-                                  bool return_attention_mask) {
+EncodeOutput FundamentalTokenizer::Encode(
+    const icu::UnicodeString* text_a, const icu::UnicodeString* text_b,
+    bool add_special_tokens, int max_length, TruncateStrategy truncate_stratety,
+    PaddingStrategy padding_strategy, bool return_token_type_ids,
+    bool return_attention_mask) {
   EncodeOutput outputs;
   auto text_a_token_ids = GetInputIds(Tokenize(*text_a));
   std::vector<int> text_b_token_ids;
@@ -74,6 +72,11 @@ void FundamentalTokenizer::Encode(const icu::UnicodeString* text_a,
   if (return_token_type_ids) {
     outputs.token_type_ids = token_type_ids;
   }
+  if (padding_strategy != PaddingStrategy::DO_NOT_PAD ||
+      return_attention_mask) {
+    pad(&outputs, max_length, padding_strategy, return_attention_mask);
+  }
+  return outputs;
 }
 
 std::vector<icu::UnicodeString> FundamentalTokenizer::Tokenize(

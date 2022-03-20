@@ -12,6 +12,13 @@
 #include <vector>
 
 namespace tokenizers {
+
+struct EncodeOutput {
+  std::vector<int> input_ids;
+  std::optional<std::vector<int>> attention_mask;
+  std::optional<std::vector<int>> token_type_ids;
+};
+
 class FundamentalTokenizer {
  public:
   using CharIdsMap = std::unordered_map<icu::UnicodeString, std::set<int>>;
@@ -20,12 +27,6 @@ class FundamentalTokenizer {
   struct TokenSpan {
     int start;
     int length;
-  };
-
-  struct EncodeOutput {
-    std::vector<int> input_ids;
-    std::optional<std::vector<int>> attention_mask;
-    std::optional<std::vector<int>> token_type_ids;
   };
 
   enum class TruncateStrategy : int { ONLY_FIRST, ONLY_SECOND, LONGEST_FIRST };
@@ -47,7 +48,7 @@ class FundamentalTokenizer {
 
   virtual ~FundamentalTokenizer() = default;
 
-  void Encode(
+  EncodeOutput Encode(
       const icu::UnicodeString* text_a,
       const icu::UnicodeString* text_b = nullptr,
       bool add_special_tokens = true, int max_length = 512,
