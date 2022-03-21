@@ -1,6 +1,5 @@
 #include "tokenizers/fundamental/fundamental_tokenizer.h"
 
-#include "tokenizers/bert/bert_tokenizer.h"
 #include "tokenizers/utils/tokenizer_utils.h"
 
 #include <unicode/brkiter.h>

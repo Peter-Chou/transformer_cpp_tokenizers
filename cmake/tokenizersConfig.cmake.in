@@ -1,0 +1,7 @@
+@PACKAGE_INIT@
+include ("${CMAKE_CURRENT_LIST_DIR}/tokenizersTargets.cmake")
+
+set (tokenizers_FOUND 1)
+
+set (tokenizers_INCLUDE_DIR  "@TOKENIZERS_INCLUDE_DIR@")
+set (tokenizers_VERSION_STRING "@TOKENIZERS_BUILD_VERSION@")

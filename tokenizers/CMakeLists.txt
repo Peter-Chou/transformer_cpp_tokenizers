@@ -11,28 +11,32 @@ add_library(tokenizers INTERFACE)
 
 target_link_libraries(tokenizers INTERFACE
     fundamental_tokenizer
-    basic_tokenizer
+    basic_tokenizers
     bert_tokenizer
     utils
     unilib
+    )
+target_include_directories(tokenizers INTERFACE
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/tokenizers>
+    $<INSTALL_INTERFACE:include>
     )
 
 set_target_properties(tokenizers PROPERTIES
     INTERFACE_COMPILE_DEFINITIONS "U_STATIC_IMPLEMENTATION;U_CHARSET_IS_UTF8=1;U_NO_DEFAULT_INCLUDE_UTF_HEADERS=1")
 
-add_executable(main
-    main.cc
-    )
+# add_executable(main
+#     main.cc
+#     )
 
-target_link_libraries(main PUBLIC
-    fundamental_tokenizer
-    basic_tokenizer
-    bert_tokenizer
-    utils
-    unilib
-    ${ICU_LIBRARIES}
-    )
-target_include_directories(main PUBLIC ${ICU_INCLUDE_DIRS})
+# target_link_libraries(main PUBLIC
+#     fundamental_tokenizer
+#     basic_tokenizers
+#     bert_tokenizer
+#     utils
+#     unilib
+#     ${ICU_LIBRARIES}
+#     )
+# target_include_directories(main PUBLIC ${ICU_INCLUDE_DIRS})
 
-set_target_properties(main PROPERTIES
-    INTERFACE_COMPILE_DEFINITIONS "U_STATIC_IMPLEMENTATION;U_CHARSET_IS_UTF8=1;U_NO_DEFAULT_INCLUDE_UTF_HEADERS=1")
+# set_target_properties(main PROPERTIES
+#     INTERFACE_COMPILE_DEFINITIONS "U_STATIC_IMPLEMENTATION;U_CHARSET_IS_UTF8=1;U_NO_DEFAULT_INCLUDE_UTF_HEADERS=1")

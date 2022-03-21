@@ -37,3 +37,49 @@ include_directories(tokenizers/lib)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_subdirectory(tokenizers)
+
+
+include(CMakePackageConfigHelpers)
+# export & install targets
+install(
+    TARGETS tokenizers
+    bert_tokenizer
+    fundamental_tokenizer
+    basic_tokenizers
+    utils
+    unilib
+    EXPORT ${PROJECT_NAME}Targets
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION lib
+    # ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    )
+install(
+    EXPORT ${PROJECT_NAME}Targets
+    FILE ${PROJECT_NAME}Targets.cmake
+    NAMESPACE ${PROJECT_NAME}::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
+
+set (TOKENIZERS_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/include" )
+configure_package_config_file (
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/tokenizersConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/tokenizersConfig.cmake
+    PATH_VARS TOKENIZERS_INCLUDE_DIR
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+    # NO_CHECK_REQUIRED_COMPONENTS_MACRO # Eigen does not provide components
+    )
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+    VERSION ${RANKPIPE_BUILD_VERSION}
+    COMPATIBILITY AnyNewerVersion
+    # COMPATIBILITY SameMajorVersion
+    )
+install ( FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME} )
+
+# filter & install header files
+INSTALL (
+    DIRECTORY ${PROJECT_SOURCE_DIR}/tokenizers
+    DESTINATION include
+    FILES_MATCHING PATTERN "*.h*")
