@@ -50,7 +50,7 @@ int main() {
       "山东3例，安徽2例，甘肃2例，江苏1例，湖南1例）。无新增死亡病例。新增疑似"
       "病例3例，均为境外输入病例（均在上海）。");
 
-  icu::UnicodeString text_b("谢谢你哦！我知道拉，haha 去吃饭咯");
+  icu::UnicodeString text_b("谢谢你哦！我知道拉，haha ü去吃饭咯");
   FundamentalTokenizer::Options f_options{};
   BertTokenizer::Options bert_options;
   bert_options.f_options = f_options;
@@ -59,11 +59,16 @@ int main() {
   // auto tokenizer = BertTokenizer(options);
   auto tokenizer = BertTokenizer::CreateBertTokenizer(bert_options);
   // tokenizer->Encode(&text, &text_b);
-  tokenizer->Encode(&text, nullptr);
-  // auto results = tokenizer->Tokenize(text);
-  // for (auto& text : results) {
-  //   std::cout << text << std::endl;
+  auto outputs = tokenizer->Encode(&text_b, nullptr, 20);
+  // std::cout << "attention mask size: " << (*outputs.attention_mask).size()
+  //           << std::endl;
+  // for (auto& t : (*outputs.attention_mask)) {
+  //   std::cout << t << std::endl;
   // }
+  std::cout << "input_ids size: " << outputs.input_ids.size() << std::endl;
+  for (auto& t : outputs.input_ids) {
+    std::cout << t << std::endl;
+  }
 
   // icu::UnicodeString text("你");
   // auto results = WhitespaceTokenize(text);

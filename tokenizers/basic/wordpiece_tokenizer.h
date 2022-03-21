@@ -1,7 +1,6 @@
 #pragma once
 
-#include "unicode/uniset.h"
-
+#include <unicode/uniset.h>
 #include <unicode/unistr.h>
 
 #include <unordered_map>

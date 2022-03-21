@@ -1,13 +1,12 @@
-#include "fundamental/fundamental_tokenizer.h"
+#include "tokenizers/fundamental/fundamental_tokenizer.h"
 
-#include "bert/bert_tokenizer.h"
-#include "utils/tokenizer_utils.h"
+#include "tokenizers/bert/bert_tokenizer.h"
+#include "tokenizers/utils/tokenizer_utils.h"
 
 #include <unicode/brkiter.h>
 #include <unicode/unistr.h>
 
 #include <algorithm>
-#include <iostream>
 #include <iterator>
 
 namespace tokenizers {
@@ -28,7 +27,7 @@ FundamentalTokenizer::FundamentalTokenizer(Options options)
 
 EncodeOutput FundamentalTokenizer::Encode(
     const icu::UnicodeString* text_a, const icu::UnicodeString* text_b,
-    bool add_special_tokens, int max_length, TruncateStrategy truncate_stratety,
+    int max_length, bool add_special_tokens, TruncateStrategy truncate_stratety,
     PaddingStrategy padding_strategy, bool return_token_type_ids,
     bool return_attention_mask) {
   EncodeOutput outputs;
@@ -401,6 +400,10 @@ bool FundamentalTokenizer::pad(EncodeOutput* output, int max_length,
                                   token_type_ids.begin(), token_type_ids.end());
         token_type_ids = std::move(tmp_token_type_ids);
       }
+    }
+  } else {
+    if (return_attention_mask) {
+      output->attention_mask = std::vector<int>(required_ids_size, 1);
     }
   }
 

@@ -1,7 +1,8 @@
 #pragma once
 
-#include "unicode/unistr.h"
-#include "utils/unistr_utils.h"
+#include "tokenizers/utils/unistr_utils.h"
+
+#include <unicode/unistr.h>
 
 #include <optional>
 #include <set>
@@ -42,16 +43,14 @@ class FundamentalTokenizer {
     icu::UnicodeString mask_token = "[MASK]";
   };
 
-  // FundamentalTokenizer() = delete;
-
   FundamentalTokenizer(Options options);
 
   virtual ~FundamentalTokenizer() = default;
 
   EncodeOutput Encode(
       const icu::UnicodeString* text_a,
-      const icu::UnicodeString* text_b = nullptr,
-      bool add_special_tokens = true, int max_length = 512,
+      const icu::UnicodeString* text_b = nullptr, int max_length = 512,
+      bool add_special_tokens = true,
       TruncateStrategy truncate_stratety = TruncateStrategy::LONGEST_FIRST,
 
       PaddingStrategy padding_strategy = PaddingStrategy::MAX_LENGTH,

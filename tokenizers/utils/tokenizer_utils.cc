@@ -1,10 +1,10 @@
-#include "utils/tokenizer_utils.h"
+#include "tokenizers/utils/tokenizer_utils.h"
 
-#include "unicode/regex.h"
-#include "unilib/unicode.h"
-#include "unilib/uninorms.h"
-#include "utils/unistr_utils.h"
+#include "tokenizers/lib/unilib/unicode.h"
+#include "tokenizers/lib/unilib/uninorms.h"
+#include "tokenizers/utils/unistr_utils.h"
 
+#include <unicode/regex.h>
 #include <unicode/umachine.h>
 
 #include <cstdint>

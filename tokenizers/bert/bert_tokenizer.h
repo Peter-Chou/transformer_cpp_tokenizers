@@ -1,9 +1,9 @@
 #pragma once
 
-#include "basic/basic_tokenizer.h"
-#include "basic/wordpiece_tokenizer.h"
-#include "fundamental/fundamental_tokenizer.h"
-#include "utils/tokenizer_utils.h"
+#include "tokenizers/basic/basic_tokenizer.h"
+#include "tokenizers/basic/wordpiece_tokenizer.h"
+#include "tokenizers/fundamental/fundamental_tokenizer.h"
+#include "tokenizers/utils/tokenizer_utils.h"
 
 #include <unicode/unistr.h>
 

@@ -1,10 +1,7 @@
-#include "bert/bert_tokenizer.h"
+#include "tokenizers/bert/bert_tokenizer.h"
 
-#include "fundamental/fundamental_tokenizer.h"
+#include "tokenizers/fundamental/fundamental_tokenizer.h"
 
-#include <unicode/ustream.h>
-
-#include <iostream>
 #include <memory>
 
 namespace tokenizers {
@@ -41,9 +38,6 @@ std::vector<icu::UnicodeString> BertTokenizer::TokenizeImpl(
         split_tokens.push_back(token);
       } else {
         auto tokens = wordpiece_tokenizer_.Tokenize(token);
-        // for (auto& t : tokens) {
-        //   std::cout << t << std::endl;
-        // }
         split_tokens.insert(split_tokens.end(), tokens.begin(), tokens.end());
       }
     }

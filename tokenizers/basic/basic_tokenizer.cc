@@ -1,15 +1,13 @@
-#include "basic/basic_tokenizer.h"
+#include "tokenizers/basic/basic_tokenizer.h"
 
-#include "utils/tokenizer_utils.h"
+#include "tokenizers/utils/tokenizer_utils.h"
 
 #include <unicode/brkiter.h>
 #include <unicode/ubrk.h>
 #include <unicode/umachine.h>
 #include <unicode/unistr.h>
-#include <unicode/ustream.h>
 
 #include <algorithm>
-#include <iostream>
 
 namespace tokenizers {
 
@@ -19,7 +17,6 @@ std::vector<icu::UnicodeString> BasicTokenizer::Tokenize(
   if (tokenize_chinese_chars_) {
     tmp_text = TokenizeChineseChars(tmp_text);
   }
-  // auto sub_texts = SplitBySpecialToken(text);
 
   icu::UnicodeString processed_text;
   bool is_start = true;

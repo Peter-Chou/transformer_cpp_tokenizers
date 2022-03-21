@@ -1,6 +1,6 @@
 #pragma once
 
-#include "utils/unistr_utils.h"
+#include "tokenizers/utils/unistr_utils.h"
 
 #include <unicode/unistr.h>
 
@@ -17,8 +17,8 @@ class BasicTokenizer {
  public:
   BasicTokenizer() = default;
 
-  BasicTokenizer(bool do_lower_case,
-                 bool tokenize_chinese_chars, bool strip_accents,
+  BasicTokenizer(bool do_lower_case, bool tokenize_chinese_chars,
+                 bool strip_accents,
                  std::unordered_set<icu::UnicodeString>* special_token_ptr)
       : do_lower_case_(do_lower_case),
         tokenize_chinese_chars_(tokenize_chinese_chars),
@@ -27,7 +27,7 @@ class BasicTokenizer {
 
   std::vector<icu::UnicodeString> Tokenize(const icu::UnicodeString& text);
 
-private:
+ private:
   std::unordered_set<icu::UnicodeString>* special_tokens_ptr_;
 
   bool do_lower_case_ = true;
