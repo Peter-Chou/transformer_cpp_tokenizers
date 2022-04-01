@@ -47,10 +47,17 @@ class FundamentalTokenizer {
 
   virtual ~FundamentalTokenizer() = default;
 
+  // EncodeOutput Encode(
+  //     const icu::UnicodeString* text_a,
+  //     const icu::UnicodeString* text_b = nullptr, int max_length = 512,
+  //     bool add_special_tokens = true,
+  //     TruncateStrategy truncate_stratety = TruncateStrategy::LONGEST_FIRST,
+
+  //     PaddingStrategy padding_strategy = PaddingStrategy::MAX_LENGTH,
+  //     bool return_token_type_ids = true, bool return_attention_mask = true);
   EncodeOutput Encode(
-      const icu::UnicodeString* text_a,
-      const icu::UnicodeString* text_b = nullptr, int max_length = 512,
-      bool add_special_tokens = true,
+      const std::string* text_a, const std::string* text_b = nullptr,
+      int max_length = 512, bool add_special_tokens = true,
       TruncateStrategy truncate_stratety = TruncateStrategy::LONGEST_FIRST,
 
       PaddingStrategy padding_strategy = PaddingStrategy::MAX_LENGTH,

@@ -4,6 +4,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+option(BUILD_TESTING "build the test" ON)
+
 project(tokenizers
     VERSION 0.1.0
     LANGUAGES CXX)
@@ -37,6 +39,29 @@ include_directories(tokenizers/lib)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_subdirectory(tokenizers)
+
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
+    add_subdirectory(${PROJECT_SOURCE_DIR}/third_party/googletest third_party/googletest)
+    mark_as_advanced(
+        BUILD_GMOCK BUILD_GTEST BUILD_SHARED_LIBS
+        gmock_build_tests gtest_build_samples gtest_build_tests
+        gtest_disable_pthreads gtest_force_shared_crt gtest_hide_internal_symbols
+        )
+    set_target_properties(gtest PROPERTIES FOLDER third_party)
+    set_target_properties(gtest_main PROPERTIES FOLDER third_party)
+    set_target_properties(gmock PROPERTIES FOLDER third_party)
+    set_target_properties(gmock_main PROPERTIES FOLDER third_party)
+    set(DATA_DIR "${CMAKE_CURRENT_SOURCE_DIR}/data")
+    configure_file(data.h.in data.h @ONLY)
+    include_directories(${CMAKE_CURRENT_BINARY_DIR})
+    include(CTest)
+    enable_testing()
+    add_custom_target(buildTest ${CMAKE_CTEST_COMMAND} -V)
+    set(CTEST_TEST_TIMEOUT 1)
+    include(GoogleTest)
+    include(cmake/gtestMacros.cmake)
+    add_subdirectory(tests)
+endif()
 
 
 include(CMakePackageConfigHelpers)

@@ -68,3 +68,4 @@ build/
 Release/
 Debug/
 compile_commands.json
+Testing/

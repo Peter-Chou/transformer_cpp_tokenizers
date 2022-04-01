@@ -1,0 +1,12 @@
+set(test_bert_tokenizer_sources
+    test_bert_tokenizer.cc
+    ../main.cc
+    )
+set(test_bert_tokenizer_libraries
+    tokenizers::tokenizers)
+package_add_test_with_libraries(test_bert_tokenizer
+    "${test_bert_tokenizer_sources}"
+    "${test_bert_tokenizer_libraries}"
+    #"${PROJECT_DIR}"
+    "${CMAKE_SOURCE_DIR}"
+    )

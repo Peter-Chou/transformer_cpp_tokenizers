@@ -25,15 +25,17 @@ FundamentalTokenizer::FundamentalTokenizer(Options options)
 }
 
 EncodeOutput FundamentalTokenizer::Encode(
-    const icu::UnicodeString* text_a, const icu::UnicodeString* text_b,
-    int max_length, bool add_special_tokens, TruncateStrategy truncate_stratety,
+    const std::string* text_a, const std::string* text_b, int max_length,
+    bool add_special_tokens, TruncateStrategy truncate_stratety,
     PaddingStrategy padding_strategy, bool return_token_type_ids,
     bool return_attention_mask) {
   EncodeOutput outputs;
-  auto text_a_token_ids = GetInputIds(Tokenize(*text_a));
+  icu::UnicodeString utext_a = icu::UnicodeString::fromUTF8(*text_a);
+  auto text_a_token_ids = GetInputIds(Tokenize(utext_a));
   std::vector<int> text_b_token_ids;
   if (text_b) {
-    text_b_token_ids = GetInputIds(Tokenize(*text_b));
+    icu::UnicodeString utext_b = icu::UnicodeString::fromUTF8(*text_b);
+    text_b_token_ids = GetInputIds(Tokenize(utext_b));
   }
 
   int total_length = text_a_token_ids.size() + text_b_token_ids.size();

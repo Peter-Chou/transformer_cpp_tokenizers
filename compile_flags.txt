@@ -1,3 +1,4 @@
 -xc++
 -std=c++17
 -Ithird_party/unilib/unilib
+-Ithird_party/googletest/googletest/include

@@ -8,6 +8,7 @@ add_subdirectory(lib)
 add_subdirectory(utils)
 
 add_library(tokenizers INTERFACE)
+add_library(tokenizers::tokenizers ALIAS tokenizers)
 
 target_link_libraries(tokenizers INTERFACE
     fundamental_tokenizer
