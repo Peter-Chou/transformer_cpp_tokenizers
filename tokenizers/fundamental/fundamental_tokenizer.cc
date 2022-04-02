@@ -6,6 +6,7 @@
 #include <unicode/unistr.h>
 
 #include <algorithm>
+#include <cstddef>
 #include <iterator>
 
 namespace tokenizers {
@@ -24,48 +25,69 @@ FundamentalTokenizer::FundamentalTokenizer(Options options)
   AddSpecialToken(options.mask_token);
 }
 
+std::vector<EncodeOutput> FundamentalTokenizer::BatchEncode(
+    const std::vector<std::string>* a_texts,
+    const std::vector<std::string>* b_texts, int max_length,
+    bool add_special_tokens, TruncateStrategy truncate_stratety,
+    PaddingStrategy padding_strategy, bool return_token_type_ids,
+    bool return_attention_mask) {
+  std::vector<EncodeOutput> outputs;
+  const std::string* b_text = nullptr;
+  for (size_t i = 0; i < a_texts->size(); ++i) {
+    const std::string* a_text = &a_texts->at(i);
+    if (b_texts != nullptr) {
+      b_text = &b_texts->at(i);
+    } else {
+      b_text = nullptr;
+    }
+    outputs.push_back(Encode(a_text, b_text, max_length, add_special_tokens,
+                             truncate_stratety, padding_strategy,
+                             return_token_type_ids, return_attention_mask));
+  }
+  return outputs;
+}
 EncodeOutput FundamentalTokenizer::Encode(
-    const std::string* text_a, const std::string* text_b, int max_length,
+    const std::string* a_text, const std::string* b_text, int max_length,
     bool add_special_tokens, TruncateStrategy truncate_stratety,
     PaddingStrategy padding_strategy, bool return_token_type_ids,
     bool return_attention_mask) {
   EncodeOutput outputs;
-  icu::UnicodeString utext_a = icu::UnicodeString::fromUTF8(*text_a);
-  auto text_a_token_ids = GetInputIds(Tokenize(utext_a));
-  std::vector<int> text_b_token_ids;
-  if (text_b) {
-    icu::UnicodeString utext_b = icu::UnicodeString::fromUTF8(*text_b);
-    text_b_token_ids = GetInputIds(Tokenize(utext_b));
+  icu::UnicodeString a_utext = icu::UnicodeString::fromUTF8(*a_text);
+  auto a_utext_token_ids = GetInputIds(Tokenize(a_utext));
+  std::vector<int> b_utext_token_ids;
+  if (b_text) {
+    icu::UnicodeString b_utext = icu::UnicodeString::fromUTF8(*b_text);
+    b_utext_token_ids = GetInputIds(Tokenize(b_utext));
   }
 
-  int total_length = text_a_token_ids.size() + text_b_token_ids.size();
+  int total_length = a_utext_token_ids.size() + b_utext_token_ids.size();
   if (add_special_tokens) {
     total_length +=
-        numSpecialTokensToAdd(/* pair= */ !text_b_token_ids.empty());
+        numSpecialTokensToAdd(/* pair= */ !b_utext_token_ids.empty());
   }
 
-  truncateSequence(&text_a_token_ids, &text_b_token_ids,
+  truncateSequence(&a_utext_token_ids, &b_utext_token_ids,
                    total_length - max_length, truncate_stratety);
   std::vector<int> sequence;
   std::vector<int> token_type_ids;
   if (add_special_tokens) {
-    if (text_b_token_ids.empty()) {
-      sequence = BuildInputsWithSpecialTokens(&text_a_token_ids, nullptr);
+    if (b_utext_token_ids.empty()) {
+      sequence = BuildInputsWithSpecialTokens(&a_utext_token_ids, nullptr);
       token_type_ids =
-          CreateTokenTypeIdsFromSequences(&text_a_token_ids, nullptr);
+          CreateTokenTypeIdsFromSequences(&a_utext_token_ids, nullptr);
     } else {
       sequence =
-          BuildInputsWithSpecialTokens(&text_a_token_ids, &text_b_token_ids);
+          BuildInputsWithSpecialTokens(&a_utext_token_ids, &b_utext_token_ids);
       token_type_ids =
-          CreateTokenTypeIdsFromSequences(&text_a_token_ids, &text_b_token_ids);
+          CreateTokenTypeIdsFromSequences(&a_utext_token_ids, &b_utext_token_ids);
     }
   } else {
-    sequence = text_a_token_ids;
-    if (!text_b_token_ids.empty()) {
-      sequence.insert(sequence.end(), text_b_token_ids.begin(),
-                      text_b_token_ids.end());
+    sequence = a_utext_token_ids;
+    if (!b_utext_token_ids.empty()) {
+      sequence.insert(sequence.end(), b_utext_token_ids.begin(),
+                      b_utext_token_ids.end());
       token_type_ids = std::vector<int>(
-          text_a_token_ids.size() + text_b_token_ids.size(), 0);
+          a_utext_token_ids.size() + b_utext_token_ids.size(), 0);
     }
   }
   outputs.input_ids = sequence;
@@ -278,12 +300,12 @@ std::vector<int> FundamentalTokenizer::CreateTokenTypeIdsFromSequences(
 }
 
 int FundamentalTokenizer::numSpecialTokensToAdd(bool pair) {
-  std::vector<int> text_a;
+  std::vector<int> a_text;
   if (pair) {
-    // std::vector<int> text_b;
-    return BuildInputsWithSpecialTokens(&text_a, &text_a).size();
+    // std::vector<int> b_text;
+    return BuildInputsWithSpecialTokens(&a_text, &a_text).size();
   }
-  return BuildInputsWithSpecialTokens(&text_a, nullptr).size();
+  return BuildInputsWithSpecialTokens(&a_text, nullptr).size();
 }
 
 bool FundamentalTokenizer::truncateSequence(

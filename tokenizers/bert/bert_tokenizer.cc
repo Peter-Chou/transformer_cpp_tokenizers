@@ -6,9 +6,9 @@
 
 namespace tokenizers {
 
-std::unique_ptr<FundamentalTokenizer> BertTokenizer::CreateBertTokenizer(
+std::unique_ptr<BertTokenizer> BertTokenizer::CreateBertTokenizer(
     Options options) {
-  return std::unique_ptr<FundamentalTokenizer>(new BertTokenizer(options));
+  return std::unique_ptr<BertTokenizer>(new BertTokenizer(options));
 }
 
 BertTokenizer::BertTokenizer(Options options)
