@@ -1,12 +1,16 @@
 {
+    "version": "0.2.0",
     "configurations": [
         {
-        "type": "lldb-vscode",
-        "request": "launch",
-        "name": "C++ LLDB json default",
+            "type": "lldb-vscode",
+            "request": "launch",
+        "name": "C++ LLDB Filename Debug",
         "program": "${workspaceFolder}/Debug/bin/${fileBasenameNoExtension}",
         "cwd": "${workspaceFolder}/Debug",
-        "args": []
-    }
+        "MIMode": "lldb",
+        "externalConsole": false,
+        "args": [],
+        "environment": []
+        }
     ]
 }
