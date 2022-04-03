@@ -1,4 +1,3 @@
-// #include "tokenizers/"
 #include "tokenizers/bert/bert_tokenizer.h"
 
 #include "fundamental/fundamental_tokenizer.h"
@@ -9,7 +8,7 @@
 #include <data.h>
 #include <memory>
 
-using namespace tokenizers;
+namespace tokenizers {
 
 class BertTokenizerTest : public ::testing::Test {
  protected:
@@ -25,10 +24,9 @@ class BertTokenizerTest : public ::testing::Test {
   virtual void SetUp() {}
   virtual void TearDown() {}
 
-  static std::unique_ptr<tokenizers::BertTokenizer> bert_tokenizer_;
+  static std::unique_ptr<BertTokenizer> bert_tokenizer_;
 };
-std::unique_ptr<tokenizers::BertTokenizer> BertTokenizerTest::bert_tokenizer_ =
-    nullptr;
+std::unique_ptr<BertTokenizer> BertTokenizerTest::bert_tokenizer_ = nullptr;
 
 TEST_F(BertTokenizerTest, test_Encode) {
   std::string text("谢谢你哦！我知道拉，haha ü去吃饭咯");
@@ -51,3 +49,5 @@ TEST_F(BertTokenizerTest, test_BatchEncode) {
     EXPECT_THAT(expected_output, ::testing::ContainerEq(output.input_ids));
   }
 }
+
+}  // namespace tokenizers

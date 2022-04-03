@@ -9,18 +9,24 @@ add_subdirectory(utils)
 
 add_library(tokenizers INTERFACE)
 target_link_libraries(tokenizers INTERFACE
-    fundamental_tokenizer
-    basic_tokenizers
-    bert_tokenizer
-    utils
-    unilib
+    # tokenizers::fundamental_tokenizer
+    # tokenizers::basic_tokenizers
+    tokenizers::bert_tokenizer
+    # tokenizers::utils
+    # tokenizers::lib::unilib
     )
 target_include_directories(tokenizers INTERFACE
     "$<BUILD_INTERFACE:${TOKENIZERS_COMMON_INCLUDE_DIRS}>"
-    $<INSTALL_INTERFACE:include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     )
 
-set_target_properties(tokenizers PROPERTIES
-    INTERFACE_COMPILE_DEFINITIONS "U_STATIC_IMPLEMENTATION;U_CHARSET_IS_UTF8=1;U_NO_DEFAULT_INCLUDE_UTF_HEADERS=1")
+if(TOKENIZERS_ENABLE_INSTALL)
+    install(TARGETS tokenizers
+        EXPORT ${PROJECT_NAME}Targets
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        )
+endif()
 
 add_library(tokenizers::tokenizers ALIAS tokenizers)
