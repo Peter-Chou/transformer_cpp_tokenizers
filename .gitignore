@@ -63,6 +63,7 @@ MANIFEST
 *.app
 
 ## custom
+.vscode/
 .cache/
 build/
 Release/

@@ -1,6 +1,7 @@
 // #include "tokenizers/"
-#include "fundamental/fundamental_tokenizer.h"
 #include "tokenizers/bert/bert_tokenizer.h"
+
+#include "fundamental/fundamental_tokenizer.h"
 
 #include <gmock/gmock-matchers.h>
 #include <gtest/gtest.h>

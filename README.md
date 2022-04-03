@@ -24,10 +24,23 @@ sudo cmake --install build --prefix $install_path
 
 ## usage
 
-put the following code in you CMakeLists.txt
+### include project
+
+``` cmake
+add_subdirectory(tokenizers) # target: tokenizers::tokenizers
+```
+
+### find_package
 
 ``` cmake
 set(tokenizers_DIR /opt/tokenizers/lib/cmake)
 find_package(tokenizers REQUIRED) # target: tokenizers::tokenizers
+```
 
+## enable testing
+
+``` bash
+cmake -B build -DBUILD_TESTING=ON -DTOKENIZERS_BUILD_TESTING=ON
+cmake --build build -j $(nproc)
+ctest --test-dir build
 ```
