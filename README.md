@@ -8,29 +8,31 @@ install icu
 sudo apt-get install libicu-dev
 ```
 
-## build
-
-``` bash
-cmake -B build
-cmake --build build -j $(nproc)
-```
-
-## install
-
-``` bash
-install_path=/opt/tokenizers
-sudo cmake --install build --prefix $install_path
-```
-
 ## usage
 
-### include project
+### include tokenizers from source
 
 ``` cmake
 add_subdirectory(tokenizers) # target: tokenizers::tokenizers
 ```
 
 ### find_package
+
+#### build
+
+``` bash
+cmake -B build
+cmake --build build -j $(nproc)
+```
+
+#### install
+
+``` bash
+install_path=/opt/tokenizers
+sudo cmake --install build --prefix $install_path
+```
+
+#### include tokenizers from built library
 
 ``` cmake
 set(tokenizers_DIR /opt/tokenizers/lib/cmake)
