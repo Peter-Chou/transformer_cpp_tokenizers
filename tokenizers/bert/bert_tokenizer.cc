@@ -14,7 +14,7 @@ std::unique_ptr<BertTokenizer> BertTokenizer::CreateBertTokenizer(
 BertTokenizer::BertTokenizer(Options options)
     : FundamentalTokenizer(options.f_options),
       do_basic_tokenize_(options.do_basic_tokenize) {
-  token_id_map_ = LoadVocab(options.vocab_file);
+  LoadVocab(options.vocab_file, &token_id_map_);
   for (const auto& [token, id] : token_id_map_) {
     id_token_map_[id] = token;
   }

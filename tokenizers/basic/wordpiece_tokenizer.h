@@ -1,5 +1,7 @@
 #pragma once
 
+#include "tokenizers/utils/unistr_utils.h"
+
 #include <unicode/uniset.h>
 #include <unicode/unistr.h>
 

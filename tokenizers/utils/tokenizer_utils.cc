@@ -34,19 +34,19 @@ static std::unordered_map<unilib::unicode::category_t, const char*> categories =
 
 namespace tokenizers {
 
-std::unordered_map<icu::UnicodeString, int> LoadVocab(
-    const std::string& vocab_file) {
-  std::unordered_map<icu::UnicodeString, int> token_id_map;
+bool LoadVocab(const std::string& vocab_file,
+               std::unordered_map<icu::UnicodeString, int>* token_id_map) {
   std::ifstream fin(vocab_file);
   int idx = 0;
   if (fin.is_open()) {
     std::string token;
     while (std::getline(fin, token)) {
-      token_id_map[RTrim(icu::UnicodeString::fromUTF8(token))] = idx;
+      (*token_id_map)[RTrim(icu::UnicodeString::fromUTF8(token))] = idx;
       ++idx;
     }
+    return true;
   }
-  return token_id_map;
+  return false;
 }
 
 bool IsWhiteSpace(const UChar32& uchar) {
