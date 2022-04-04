@@ -41,8 +41,3 @@ function(tokenizers_cc_test)
 
   add_test(NAME ${_NAME} COMMAND ${_NAME})
 endfunction()
-
-# function(tokenizers_add_object NAME)
-#   add_library(${NAME}_obj OBJECT ${ARGN})
-#   add_library(${NAME} INTERFACE)
-# endfunction()
