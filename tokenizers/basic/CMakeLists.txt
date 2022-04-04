@@ -34,7 +34,6 @@ tokenizers_cc_test(
     GTest::gmock_main
     )
 
-## test
 tokenizers_cc_test(
     NAME
     wordpiece_tokenizer_test

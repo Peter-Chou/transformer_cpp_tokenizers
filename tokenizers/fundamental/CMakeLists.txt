@@ -24,3 +24,14 @@ if(TOKENIZERS_ENABLE_INSTALL)
 endif()
 
 add_library(tokenizers::fundamental_tokenizer ALIAS fundamental_tokenizer)
+
+## test
+tokenizers_cc_test(
+    NAME
+    fundamental_tokenizer_test
+    SRCS
+    "fundamental_tokenizer_test.cc"
+    DEPS
+    tokenizers::fundamental_tokenizer
+    GTest::gmock_main
+    )
