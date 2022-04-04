@@ -33,3 +33,14 @@ tokenizers_cc_test(
     tokenizers::basic_tokenizers
     GTest::gmock_main
     )
+
+## test
+tokenizers_cc_test(
+    NAME
+    wordpiece_tokenizer_test
+    SRCS
+    "wordpiece_tokenizer_test.cc"
+    DEPS
+    tokenizers::basic_tokenizers
+    GTest::gmock_main
+    )

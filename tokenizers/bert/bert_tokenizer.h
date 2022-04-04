@@ -7,7 +7,7 @@
 
 #include <unicode/unistr.h>
 
-#include <fstream>
+// #include <fstream>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -55,8 +55,6 @@ class BertTokenizer : public FundamentalTokenizer {
   }
 
  private:
-  void loadVocab(const std::string& vocab_file);
-
   bool do_basic_tokenize_ = true;
 
   int cls_token_id_;

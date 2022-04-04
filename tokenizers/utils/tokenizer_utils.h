@@ -9,6 +9,8 @@
 #include <vector>
 
 namespace tokenizers {
+std::unordered_map<icu::UnicodeString, int> LoadVocab(
+    const std::string& vocab_file);
 bool IsWhiteSpace(const UChar32& uchar);
 bool IsControl(const UChar32& uchar);
 bool IsPunctuation(const UChar32& uchar);

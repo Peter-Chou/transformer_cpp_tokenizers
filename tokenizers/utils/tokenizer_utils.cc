@@ -8,6 +8,7 @@
 #include <unicode/umachine.h>
 
 #include <cstdint>
+#include <fstream>
 #include <unordered_map>
 
 namespace unilib = ufal::unilib;
@@ -32,6 +33,22 @@ static std::unordered_map<unilib::unicode::category_t, const char*> categories =
 };
 
 namespace tokenizers {
+
+std::unordered_map<icu::UnicodeString, int> LoadVocab(
+    const std::string& vocab_file) {
+  std::unordered_map<icu::UnicodeString, int> token_id_map;
+  std::ifstream fin(vocab_file);
+  int idx = 0;
+  if (fin.is_open()) {
+    std::string token;
+    while (std::getline(fin, token)) {
+      token_id_map[RTrim(icu::UnicodeString::fromUTF8(token))] = idx;
+      ++idx;
+    }
+  }
+  return token_id_map;
+}
+
 bool IsWhiteSpace(const UChar32& uchar) {
   if (uchar == U' ' || uchar == U'\t' || uchar == U'\n' || uchar == U'\r') {
     return true;
@@ -171,6 +188,7 @@ icu::UnicodeString TokenizeChineseChars(const icu::UnicodeString& text) {
       output += uchar;
     }
   }
+
   return output;
 }
 

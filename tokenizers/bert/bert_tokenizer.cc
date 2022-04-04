@@ -14,7 +14,7 @@ std::unique_ptr<BertTokenizer> BertTokenizer::CreateBertTokenizer(
 BertTokenizer::BertTokenizer(Options options)
     : FundamentalTokenizer(options.f_options),
       do_basic_tokenize_(options.do_basic_tokenize) {
-  loadVocab(options.vocab_file);
+  token_id_map_ = LoadVocab(options.vocab_file);
   for (const auto& [token, id] : token_id_map_) {
     id_token_map_[id] = token;
   }
@@ -113,18 +113,6 @@ std::vector<int> BertTokenizer::GetInputIds(
     token_ids.push_back(ConvertTokenToId(token));
   }
   return token_ids;
-}
-
-void BertTokenizer::loadVocab(const std::string& vocab_file) {
-  std::ifstream fin(vocab_file);
-  int idx = 0;
-  if (fin.is_open()) {
-    std::string token;
-    while (std::getline(fin, token)) {
-      token_id_map_[RTrim(icu::UnicodeString::fromUTF8(token))] = idx;
-      ++idx;
-    }
-  }
 }
 
 int BertTokenizer::GetTokenId(const icu::UnicodeString& token) {
