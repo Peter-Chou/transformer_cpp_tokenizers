@@ -13,9 +13,7 @@ namespace tokenizers {
 class BertTokenizerTest : public ::testing::Test {
  protected:
   static void SetUpTestSuite() {
-    FundamentalTokenizer::Options f_options{};
     BertTokenizer::Options bert_options;
-    bert_options.f_options = f_options;
     bert_options.vocab_file = std::string(data_dir) + "/vocabs/vocab.txt";
     bert_tokenizer_ = BertTokenizer::CreateBertTokenizer(bert_options);
   }

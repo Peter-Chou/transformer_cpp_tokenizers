@@ -22,6 +22,7 @@ add_subdirectory(tokenizers) # target: tokenizers::tokenizers
 
 ``` bash
 cmake -B build
+# cmake -B build -DBUILD_TESTING=ON -DTOKENIZERS_BUILD_TESTING=ON # enable testing
 cmake --build build -j $(nproc)
 ```
 
@@ -39,10 +40,6 @@ set(tokenizers_DIR /opt/tokenizers/lib/cmake)
 find_package(tokenizers REQUIRED) # target: tokenizers::tokenizers
 ```
 
-## enable debug and testing
+## usage
 
-``` bash
-cmake -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON -DTOKENIZERS_BUILD_TESTING=ON
-cmake --build build -j $(nproc)
-ctest --test-dir build
-```
+see wiki.
