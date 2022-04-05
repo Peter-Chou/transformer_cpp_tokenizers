@@ -80,18 +80,19 @@ class FundamentalTokenizer {
       const std::vector<int>* token_ids_0,
       const std::vector<int>* token_ids_1 = nullptr);
 
-  void AddSpecialToken(const icu::UnicodeString& token);
+  icu::UnicodeString ProcessSpecialTokens(const icu::UnicodeString& text);
   std::vector<icu::UnicodeString> SplitBySpecialToken(
       const icu::UnicodeString& text);
-  TokenSpan GetSpecialTokenSpan(const icu::UnicodeString& text, int start);
-  icu::UnicodeString ProcessSpecialTokens(const icu::UnicodeString& text);
   std::vector<TokenSpan> getSpecialTokenSpans(const icu::UnicodeString& text);
+  TokenSpan GetSpecialTokenSpan(const icu::UnicodeString& text, int start);
+
   CharIdsMapList* GetMutableTokenSetMapList() { return &char_ids_map_list_; }
   std::unordered_set<icu::UnicodeString>* GetMutableSpecialTokens() {
     return &special_tokens_;
   }
 
  protected:
+  void addSpecialToken(const icu::UnicodeString& token);
   bool pad(EncodeOutput* output, int max_length = 512,
            PaddingStrategy padding_strategy = PaddingStrategy::MAX_LENGTH,
            bool return_attention_mask = true);

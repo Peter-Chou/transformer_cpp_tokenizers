@@ -18,11 +18,11 @@ FundamentalTokenizer::FundamentalTokenizer(Options options)
       pad_token_(options.pad_token),
       cls_token_(options.cls_token),
       mask_token_(options.mask_token) {
-  AddSpecialToken(options.unk_token);
-  AddSpecialToken(options.sep_token);
-  AddSpecialToken(options.pad_token);
-  AddSpecialToken(options.cls_token);
-  AddSpecialToken(options.mask_token);
+  addSpecialToken(options.unk_token);
+  addSpecialToken(options.sep_token);
+  addSpecialToken(options.pad_token);
+  addSpecialToken(options.cls_token);
+  addSpecialToken(options.mask_token);
 }
 
 std::vector<EncodeOutput> FundamentalTokenizer::BatchEncode(
@@ -136,7 +136,7 @@ icu::UnicodeString FundamentalTokenizer::ProcessSpecialTokens(
   return processed_text;
 }
 
-void FundamentalTokenizer::AddSpecialToken(const icu::UnicodeString& token) {
+void FundamentalTokenizer::addSpecialToken(const icu::UnicodeString& token) {
   special_tokens_.insert(token);
 
   icu::BreakIterator* boundary;
@@ -370,7 +370,6 @@ bool FundamentalTokenizer::truncateSequence(
 bool FundamentalTokenizer::pad(EncodeOutput* output, int max_length,
                                PaddingStrategy padding_strategy,
                                bool return_attention_mask) {
-  // TODO test this function
   auto& required_ids = output->input_ids;
   int required_ids_size = required_ids.size();
   if (padding_strategy == PaddingStrategy::LONGEST) {

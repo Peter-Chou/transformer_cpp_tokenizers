@@ -1,37 +1,41 @@
-#include "tokenizers/fundamental/fundamental_tokenizer.h"
+#include "tokenizers/fundamental/fundamental_tokenizer_test.h"
+
+#include "fundamental/fundamental_tokenizer.h"
 
 #include <gmock/gmock-matchers.h>
 #include <gtest/gtest.h>
+#include <unicode/unistr.h>
 #include <unicode/ustream.h>
 
 #include <iostream>
+#include <memory>
 
 namespace tokenizers {
 
 class FundamentalTokenizerTest : public ::testing::Test {
  protected:
   static void SetUpTestSuite() {
-    // std::string vocab_file = std::string(data_dir) + "/vocabs/vocab.txt";
-    // token_id_map_ = new std::unordered_map<icu::UnicodeString, int>();
-    // LoadVocab(vocab_file, token_id_map_);
-    // wordpiece_tokenizer_ =
-    //     std::make_unique<WordpieceTokenizer>("[UNK]", token_id_map_);
+    FundamentalTokenizer::Options options{};
+    tokenizer_ = std::make_unique<DummyTokenizer>(options);
   }
   static void TearDownTestSuite() {}
 
   virtual void SetUp() {}
   virtual void TearDown() {}
 
-  // static std::unordered_map<icu::UnicodeString, int>* token_id_map_;
-  // static std::unique_ptr<tokenizers::WordpieceTokenizer> wordpiece_tokenizer_;
+  static std::unique_ptr<tokenizers::DummyTokenizer> tokenizer_;
 };
 
-  // std::unordered_map<icu::UnicodeString, int>*
-  //     FundamentalTokenizerTest::token_id_map_ = nullptr;
-  // std::unique_ptr<tokenizers::WordpieceTokenizer>
-  //     FundamentalTokenizerTest::wordpiece_tokenizer_ = nullptr;
+std::unique_ptr<tokenizers::DummyTokenizer>
+    FundamentalTokenizerTest::tokenizer_ = nullptr;
 
-  TEST_F(FundamentalTokenizerTest, Tokenize) {
-  }
+TEST_F(FundamentalTokenizerTest, SplitBySpecialToken) {
+  icu::UnicodeString text("\t[CLS]You aRe gOod,[SEP] 你是\t最棒\r的！[SEP]\t");
+  auto sub_texts = tokenizer_->SplitBySpecialToken(text);
+  std::vector<icu::UnicodeString> expected_outputs = {
+      "\t",    "[CLS]", "You aRe gOod,", "[SEP]", " 你是\t最棒\r的！",
+      "[SEP]", "\t"};
+  EXPECT_THAT(expected_outputs, ::testing::ContainerEq(sub_texts));
+}
 
 }  // namespace tokenizers
