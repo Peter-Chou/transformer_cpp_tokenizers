@@ -9,11 +9,7 @@ add_subdirectory(utils)
 
 add_library(tokenizers INTERFACE)
 target_link_libraries(tokenizers INTERFACE
-    # tokenizers::fundamental_tokenizer
-    # tokenizers::basic_tokenizers
     tokenizers::bert_tokenizer
-    # tokenizers::utils
-    # tokenizers::lib::unilib
     )
 target_include_directories(tokenizers INTERFACE
     "$<BUILD_INTERFACE:${TOKENIZERS_COMMON_INCLUDE_DIRS}>"

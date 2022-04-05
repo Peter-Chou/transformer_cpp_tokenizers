@@ -5,7 +5,6 @@ add_library(fundamental_tokenizer
 
 target_link_libraries(fundamental_tokenizer PUBLIC
     tokenizers::utils
-    # ${ICU_LIBRARIES}
     )
 set_target_properties(fundamental_tokenizer PROPERTIES
     COMPILE_DEFINITIONS "U_STATIC_IMPLEMENTATION;U_CHARSET_IS_UTF8=1;U_NO_DEFAULT_INCLUDE_UTF_HEADERS=1")
