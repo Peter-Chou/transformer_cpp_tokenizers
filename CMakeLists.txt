@@ -20,6 +20,12 @@ if (NOT CMAKE_BUILD_TYPE)
 endif()
 message(STATUS "build type: ${CMAKE_BUILD_TYPE}")
 
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fstandalone-debug")
+    endif()
+endif()
+
 if (WIN32)
     add_definitions(-DNOMINMAX -D_USE_MATH_DEFINES)
 endif()
