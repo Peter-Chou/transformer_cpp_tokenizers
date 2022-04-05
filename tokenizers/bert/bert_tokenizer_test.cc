@@ -15,7 +15,7 @@ class BertTokenizerTest : public ::testing::Test {
   static void SetUpTestSuite() {
     BertTokenizer::Options bert_options;
     bert_options.vocab_file = std::string(data_dir) + "/vocabs/vocab.txt";
-    bert_tokenizer_ = BertTokenizer::CreateBertTokenizer(bert_options);
+    bert_tokenizer_ = BertTokenizer::CreateTokenizer(bert_options);
   }
   static void TearDownTestSuite() {}
 

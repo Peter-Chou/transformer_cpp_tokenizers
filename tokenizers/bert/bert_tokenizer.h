@@ -24,7 +24,7 @@ class BertTokenizer : public FundamentalTokenizer {
     bool tokenize_chinese_chars = true;
   };
 
-  static std::unique_ptr<BertTokenizer> CreateBertTokenizer(Options options);
+  static std::unique_ptr<BertTokenizer> CreateTokenizer(Options options);
 
   BertTokenizer(Options options);
   std::vector<icu::UnicodeString> TokenizeImpl(
