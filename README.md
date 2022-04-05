@@ -31,7 +31,6 @@ sudo cmake --install build --prefix $install_path
 #### find the library
 
 ``` cmake
-set(tokenizers_DIR /opt/tokenizers/lib/cmake)
 find_package(tokenizers REQUIRED) # target: tokenizers::tokenizers
 ```
 
